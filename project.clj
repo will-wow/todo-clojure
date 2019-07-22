@@ -1,15 +1,16 @@
 (defproject todo-clojure "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+  :description "A simple todo API to mess with clojure"
 
   :dependencies [[org.clojure/clojure "1.10.1"]
                  ; Compojure - A basic routing library
                  [compojure "1.6.1"]
-                 ; Our Http library for client/server
-                 [http-kit "2.3.0"]
-                 ; Reload code
-                 [lein-ring "0.12.5"]
+                 ; Ring
+                 [ring/ring-core "1.7.1"]
+                 [ring/ring-jetty-adapter "1.7.1"]
+                 [lein-ring "0.12.5"] ; Reload code
                  [ring-cors "0.1.13"]
                  [ring/ring-json "0.4.0"]
+                 [ring/ring-mock "0.4.0"]
                  ; Clojure data.JSON library
                  [org.clojure/data.json "0.2.6"]
                  [environ "1.1.0"]
@@ -23,20 +24,6 @@
 
   :aliases {"migrate"  ["run" "-m" "db.core/migrate"]
             "rollback" ["run" "-m" "db.core/rollback"]}
-
-  :profiles
-  {:dev {:env {:environment "development"
-               :port "8080"
-               :database-type "postgresql"
-               :database-name "app"
-               :database-username "postgres"
-               :database-password "postgres"
-               :database-host "localhost"
-               :database-port "5424"}}
-   :test {:env {:environment "test"}}
-   :prod {:env {:environment "production"
-                :aot :all}}
-   :uberjar {:aot :all}}
 
   :ring {:handler todo-clojure.core/app
          :port 3001
