@@ -31,13 +31,21 @@
           (json/write-str))})
 
 (defn get-todo [req]
-  {:status 200
-   :headers {"Content-Type" "application/json"}
-   :body (->>
-          {:id (Integer/parseInt (:id (:params req)))}
-          (todo/get-todo db)
-          (format-todo)
-          (json/write-str))})
+  (let [todo (->> {:id (Integer/parseInt (:id (:params req)))}
+                  (todo/get-todo db))
+        _ (inspect todo)]
+    (if todo
+
+      {:status 200
+       :headers {"Content-Type" "application/json"}
+       :body (->>
+              todo
+              (format-todo)
+              (json/write-str))}
+
+      {:status 404
+       :headers {"Content-Type" "application/json"}
+       :body "{}"})))
 
 (defn create-todo [req]
   {:status 201
@@ -73,12 +81,22 @@
             (format-todo)
             (json/write-str)))})
 
+(defn delete-todo [req]
+  {:status 200
+   :headers {"Content-Type" "application/json"}
+   :body (do (->>
+              {:id (Integer/parseInt (:id (:params req)))}
+              (todo/delete-todo db))
+
+             "{}")})
+
 
 (defroutes app-routes
   (GET "/api/todos" [] list-todos)
   (GET "/api/todos/:id" [] get-todo)
   (POST "/api/todos" [] create-todo)
   (PUT "/api/todos/:id" [] update-todo)
+  (DELETE "/api/todos/:id" [] delete-todo)
   (route/not-found "Error, page not found!"))
 
 (defn -main

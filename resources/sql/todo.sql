@@ -26,3 +26,8 @@ returning id;
 select *
 from todo
 where id = :id;
+
+-- :name delete-todo :! :n
+-- :doc Delete a todo by id
+DELETE FROM todo
+WHERE id = :id;
