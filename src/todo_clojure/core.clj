@@ -1,32 +1,22 @@
 (ns todo-clojure.core
-  (:require [org.httpkit.server :as server]
-            [compojure.core :refer :all]
+  (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [compojure.coercions :refer :all]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
             [ring.middleware.cors :refer [wrap-cors]]
-            [clojure.pprint :as pp]
             [clojure.string :as str]
             [db.core :refer [connection] :rename {connection db}]
             [java-time :as time]
             [todo-clojure.ring.trailing-slash-middlware :refer [ignore-trailing-slash]]
-            [todo-clojure.models.todo :as todo]))
-
-(defn inspect [data]
-  (do (pp/pprint data)
-      data))
-
-(defn format-todo [todo]
-  (update todo :created_at
-          (fn [created_at] (time/format
-                            :iso-local-date-time
-                            (time/local-date-time created_at)))))
+            [todo-clojure.lib.utils :refer :all]
+            [todo-clojure.models.todo :as todo :refer [format-todo]]))
 
 (defn list-todos [req]
   {:status 200
    :body (->>
           (todo/all-todos db)
+          (inspect)
           (map format-todo))})
 
 (defn get-todo [req]

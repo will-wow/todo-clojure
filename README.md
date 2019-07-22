@@ -5,7 +5,7 @@ A Clojure implementation of a todo list backed
 ## Development
 
 ```bash
-lein run
+lein ring server
 ```
 
 ## Migrations

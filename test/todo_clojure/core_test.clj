@@ -1,7 +1,22 @@
 (ns todo-clojure.core-test
   (:require [clojure.test :refer :all]
-            [todo-clojure.core :refer :all]))
+            [ring.mock.request :as mock]
+            [todo-clojure.models.todo :as todo]
+            [java-time :as time]
+            [clojure.data.json :as json]
+            [todo-clojure.core :refer [app]]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest index-test
+  (with-redefs [todo/all-todos (fn [_] (list {:id 1
+                                              :title "Learn clojure"
+                                              :done false
+                                              :created_at (time/local-date-time 2019 01 01)}))]
+
+    (is (= (app (mock/request :get "/todos"))
+           {:status 200
+            :headers {"Content-Type" "application/json; charset=utf-8"}
+            :body (json/write-str [{:id 1
+                                    :title "Learn clojure"
+                                    :done false
+                                    :created_at "2019-01-01T00:00:00"}])}))))
+
