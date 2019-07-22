@@ -1,36 +1,23 @@
 # todo-clojure
 
-FIXME: description
+A Clojure implementation of a todo list backed
 
-## Installation
+## Development
 
-Download from http://example.com/FIXME.
+```bash
+lein run
+```
 
-## Usage
+## Migrations
 
-FIXME: explanation
+Migration files are in `resources/migrations`.
 
-    $ java -jar todo-clojure-0.1.0-standalone.jar [args]
+```bash
+lein migrate
+```
 
-## Options
+and
 
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2019 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+```bash
+lein rollback
+```
