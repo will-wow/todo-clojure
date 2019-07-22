@@ -11,6 +11,7 @@
                  ; Clojure data.JSON library
                  [org.clojure/data.json "0.2.6"]
                  [environ "1.1.0"]
+                 [clojure.java-time "0.3.2"]
                  [ragtime "0.8.0"]
                  [com.layerware/hugsql "0.4.9"]
                  [org.postgresql/postgresql "42.2.2"]]
