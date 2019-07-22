@@ -35,9 +35,7 @@
    :headers {"Content-Type" "application/json"}
    :body (->>
           {:id (Integer/parseInt (:id (:params req)))}
-          (inspect)
           (todo/get-todo db)
-          (inspect)
           (format-todo)
           (json/write-str))})
 
@@ -51,9 +49,7 @@
                id_map (todo/create-todo
                        db
                        {:title (get data "title")
-                        :created_at (time/local-date-time)})
-               _ (inspect id_map)]
-
+                        :created_at (time/local-date-time)})]
            (->>
             (todo/get-todo db id_map)
             (format-todo)
@@ -63,16 +59,26 @@
 (defn update-todo [req]
   {:status 200
    :headers {"Content-Type" "application/json"}
-   :body (->>
-          {:id (:id (:params req))}
-          (todo/get-todo db)
-          (json/write-str))})
+   :body (let [data (->>
+                     (:body req)
+                     (slurp)
+                     (json/read-str))
+               id_map (todo/update-todo
+                       db
+                       {:id (get data "id")
+                        :title (get data "title")
+                        :done (get data "done")})]
+           (->>
+            (todo/get-todo db id_map)
+            (format-todo)
+            (json/write-str)))})
 
 
 (defroutes app-routes
   (GET "/api/todos" [] list-todos)
-  (GET "/api/todos/:id" [id] get-todo)
+  (GET "/api/todos/:id" [] get-todo)
   (POST "/api/todos" [] create-todo)
+  (PUT "/api/todos/:id" [] update-todo)
   (route/not-found "Error, page not found!"))
 
 (defn -main
