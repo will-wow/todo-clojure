@@ -6,8 +6,10 @@
                  [compojure "1.6.1"]
                  ; Our Http library for client/server
                  [http-kit "2.3.0"]
-                 ; Ring defaults - for query params etc
-                 [ring/ring-defaults "0.3.2"]
+                 ; Reload code
+                 [lein-ring "0.12.5"]
+                 [ring-cors "0.1.13"]
+                 [ring/ring-json "0.4.0"]
                  ; Clojure data.JSON library
                  [org.clojure/data.json "0.2.6"]
                  [environ "1.1.0"]
@@ -16,7 +18,8 @@
                  [com.layerware/hugsql "0.4.9"]
                  [org.postgresql/postgresql "42.2.2"]]
 
-  :plugins [[lein-environ "1.1.0"]]
+  :plugins [[lein-environ "1.1.0"]
+            [lein-ring "0.12.5"]]
 
   :aliases {"migrate"  ["run" "-m" "db.core/migrate"]
             "rollback" ["run" "-m" "db.core/rollback"]}
@@ -34,6 +37,11 @@
    :prod {:env {:environment "production"
                 :aot :all}}
    :uberjar {:aot :all}}
+
+  :ring {:handler todo-clojure.core/app
+         :port 3001
+         :nrepl {:start? true
+                 :port 9998}}
 
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

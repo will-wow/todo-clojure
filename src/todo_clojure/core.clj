@@ -3,12 +3,14 @@
             [compojure.core :refer :all]
             [compojure.route :as route]
             [compojure.coercions :refer :all]
-            [ring.middleware.defaults :refer :all]
+            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.json :refer [wrap-json-response wrap-json-body]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [clojure.pprint :as pp]
             [clojure.string :as str]
-            [clojure.data.json :as json]
             [db.core :refer [connection] :rename {connection db}]
             [java-time :as time]
+            [todo-clojure.ring.trailing-slash-middlware :refer [ignore-trailing-slash]]
             [todo-clojure.models.todo :as todo]))
 
 (defn inspect [data]
@@ -21,56 +23,37 @@
                             :iso-local-date-time
                             (time/local-date-time created_at)))))
 
-
 (defn list-todos [req]
   {:status 200
-   :headers {"Content-Type" "application/json"}
    :body (->>
           (todo/all-todos db)
-          (map format-todo)
-          (json/write-str))})
+          (map format-todo))})
 
 (defn get-todo [req]
   (let [todo (->> {:id (Integer/parseInt (:id (:params req)))}
                   (todo/get-todo db))
         _ (inspect todo)]
     (if todo
-
       {:status 200
-       :headers {"Content-Type" "application/json"}
-       :body (->>
-              todo
-              (format-todo)
-              (json/write-str))}
+       :body (format-todo todo)}
 
       {:status 404
-       :headers {"Content-Type" "application/json"}
        :body "{}"})))
 
 (defn create-todo [req]
   {:status 201
-   :headers {"Content-Type" "application/json"}
-   :body (let [data (->>
-                     (:body req)
-                     (slurp)
-                     (json/read-str))
+   :body (let [data (:body req)
                id_map (todo/create-todo
                        db
                        {:title (get data "title")
                         :created_at (time/local-date-time)})]
            (->>
             (todo/get-todo db id_map)
-            (format-todo)
-            (json/write-str)))})
-
+            (format-todo)))})
 
 (defn update-todo [req]
   {:status 200
-   :headers {"Content-Type" "application/json"}
-   :body (let [data (->>
-                     (:body req)
-                     (slurp)
-                     (json/read-str))
+   :body (let [data (:body req)
                id_map (todo/update-todo
                        db
                        {:id (get data "id")
@@ -78,32 +61,28 @@
                         :done (get data "done")})]
            (->>
             (todo/get-todo db id_map)
-            (format-todo)
-            (json/write-str)))})
+            (format-todo)))})
 
 (defn delete-todo [req]
-  {:status 200
-   :headers {"Content-Type" "application/json"}
+  {:status 204
    :body (do (->>
               {:id (Integer/parseInt (:id (:params req)))}
               (todo/delete-todo db))
 
              "{}")})
 
-
 (defroutes app-routes
-  (GET "/api/todos" [] list-todos)
-  (GET "/api/todos/:id" [] get-todo)
-  (POST "/api/todos" [] create-todo)
-  (PUT "/api/todos/:id" [] update-todo)
-  (DELETE "/api/todos/:id" [] delete-todo)
+  (GET    "/todos" [] list-todos)
+  (GET    "/todos/:id" [] get-todo)
+  (POST   "/todos" [] create-todo)
+  (PUT    "/todos/:id" [] update-todo)
+  (DELETE "/todos/:id" [] delete-todo)
   (route/not-found "Error, page not found!"))
 
-(defn -main
-  "this is our main entry point"
-  [& args]
-  (let [port (Integer/parseInt "3001")]
-    ; Run the server with Ring.defaults middleware
-    (server/run-server (wrap-defaults #'app-routes api-defaults)
-                       {:port port})
-    (println (str "Running webserver at http://123.0.0.1:" port))))
+(def app
+  (-> app-routes
+      wrap-params
+      wrap-json-body
+      wrap-json-response
+      ignore-trailing-slash
+      (wrap-cors :access-control-allow-origin [#".*"] :access-control-allow-methods [:get :put :post :delete])))
