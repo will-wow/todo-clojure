@@ -11,10 +11,10 @@
                  [ring-cors "0.1.13"]
                  [ring/ring-json "0.4.0"]
                  [ring/ring-mock "0.4.0"]
-                 ; Clojure data.JSON library
+                 [camel-snake-kebab "0.4.0"]
                  [org.clojure/data.json "0.2.6"]
                  [environ "1.1.0"]
-                 [clojure.java-time "0.3.2"]
+                 [clj-time "0.15.0"]
                  [ragtime "0.8.0"]
                  [com.layerware/hugsql "0.4.9"]
                  [org.postgresql/postgresql "42.2.2"]]

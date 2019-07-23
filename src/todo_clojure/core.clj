@@ -7,8 +7,8 @@
             [ring.middleware.cors :refer [wrap-cors]]
             [clojure.string :as str]
             [db.core :refer [connection] :rename {connection db}]
-            [java-time :as time]
-            [todo-clojure.ring.trailing-slash-middlware :refer [ignore-trailing-slash]]
+            [todo-clojure.ring.middleware :as middleware]
+            [todo-clojure.lib.date :as date]
             [todo-clojure.lib.utils :refer :all]
             [todo-clojure.models.todo :as todo :refer [format-todo]]))
 
@@ -16,13 +16,11 @@
   {:status 200
    :body (->>
           (todo/all-todos db)
-          (inspect)
           (map format-todo))})
 
 (defn get-todo [req]
   (let [todo (->> {:id (Integer/parseInt (:id (:params req)))}
-                  (todo/get-todo db))
-        _ (inspect todo)]
+                  (todo/get-todo db))]
     (if todo
       {:status 200
        :body (format-todo todo)}
@@ -35,8 +33,8 @@
    :body (let [data (:body req)
                id_map (todo/create-todo
                        db
-                       {:title (get data "title")
-                        :created_at (time/local-date-time)})]
+                       {:title (:title data)
+                        :created_at (date/parse-iso (:created-at data))})]
            (->>
             (todo/get-todo db id_map)
             (format-todo)))})
@@ -46,9 +44,9 @@
    :body (let [data (:body req)
                id_map (todo/update-todo
                        db
-                       {:id (get data "id")
-                        :title (get data "title")
-                        :done (get data "done")})]
+                       {:id (:id data)
+                        :title (:title data)
+                        :done (:done data)})]
            (->>
             (todo/get-todo db id_map)
             (format-todo)))})
@@ -72,7 +70,9 @@
 (def app
   (-> app-routes
       wrap-params
+      middleware/kebab-body
       wrap-json-body
       wrap-json-response
-      ignore-trailing-slash
+      middleware/kebab-body
+      middleware/ignore-trailing-slash
       (wrap-cors :access-control-allow-origin [#".*"] :access-control-allow-methods [:get :put :post :delete])))

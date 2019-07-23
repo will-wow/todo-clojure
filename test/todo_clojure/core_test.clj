@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
             [todo-clojure.models.todo :as todo]
-            [java-time :as time]
+            [clj-time.core :as t]
             [clojure.data.json :as json]
             [todo-clojure.core :refer [app]]))
 
@@ -10,7 +10,7 @@
   (with-redefs [todo/all-todos (fn [_] (list {:id 1
                                               :title "Learn clojure"
                                               :done false
-                                              :created_at (time/local-date-time 2019 01 01)}))]
+                                              :created_at (t/date-time 2019 01 01)}))]
 
     (is (= (app (mock/request :get "/todos"))
            {:status 200
@@ -18,5 +18,5 @@
             :body (json/write-str [{:id 1
                                     :title "Learn clojure"
                                     :done false
-                                    :created_at "2019-01-01T00:00:00"}])}))))
+                                    :created_at "2019-01-01T00:00:000Z"}])}))))
 

@@ -1,4 +1,8 @@
-(ns todo-clojure.ring.trailing-slash-middlware)
+(ns todo-clojure.ring.middleware
+  (:require
+   [todo-clojure.lib.utils :refer :all]
+   [camel-snake-kebab.core :as csk]
+   [camel-snake-kebab.extras :as cske]))
 
 (defn ignore-trailing-slash
   "Modifies the request uri before calling the handler.
@@ -13,3 +17,10 @@
                                             (.endsWith uri "/"))
                                      (subs uri 0 (dec (count uri)))
                                      uri))))))
+
+(defn kebab-body
+  "kebab-case the json body"
+  [handler]
+  (fn [request]
+    (let [body (:body request)]
+      (handler (assoc request :body (cske/transform-keys csk/->kebab-case-keyword body))))))
